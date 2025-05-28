@@ -7,54 +7,116 @@
 
 import SwiftUI
 
-struct ContentView: View {
-    let astronauts: [String: Astronaut] = Bundle.main.decode("astronauts.json")
-    
-    let missions: [Mission] = Bundle.main.decode("missions.json")
-    
+struct BoxLayout: View {
+    let missions: [Mission]
+    let astronauts: [String: Astronaut]
     let columns = [
         GridItem(.adaptive(minimum: 150))
     ]
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVGrid(columns: columns) {
-                    ForEach(missions) { mission in
-                        NavigationLink {
-                            MissionView(mission: mission, astronauts: astronauts)
-                        } label : {
+        ScrollView {
+            LazyVGrid(columns: columns) {
+                ForEach(missions) { mission in
+                    NavigationLink {
+                        MissionView(mission: mission, astronauts: astronauts)
+                    } label : {
+                        VStack {
+                            Image(mission.image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 100, height: 100)
+                                .padding(.top)
+                            
                             VStack {
-                                Image(mission.image)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 100, height: 100)
-                                    .padding(.top)
+                                Text(mission.displayName)
+                                    .font(.headline)
+                                    .foregroundStyle(.white)
                                 
-                                VStack {
-                                    Text(mission.displayName)
-                                        .font(.headline)
-                                        .foregroundStyle(.white)
-                                    
-                                    Text(mission.formattedLaunchDate)
-                                        .font(.caption)
-                                        .foregroundStyle(.gray)
-                                }
-                                .padding(.vertical)
-                                .frame(maxWidth: .infinity)
-                                .background(.lightBackground)
+                                Text(mission.formattedLaunchDate)
+                                    .font(.caption)
+                                    .foregroundStyle(.gray)
                             }
-                            .clipShape(.rect(cornerRadius: 10))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(.lightBackground)
-                            )
+                            .padding(.vertical)
+                            .frame(maxWidth: .infinity)
+                            .background(.lightBackground)
+                        }
+                        .clipShape(.rect(cornerRadius: 10))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(.lightBackground)
+                        )
+                    }
+                }
+            }.padding([.horizontal, .bottom])
+        }
+    }
+}
+
+struct ListLayout: View {
+    let missions: [Mission]
+    let astronauts: [String: Astronaut]
+    
+    var body: some View {
+        Form {
+            List {
+                ForEach(missions) { mission in
+                    NavigationLink {
+                        MissionView(mission: mission, astronauts: astronauts)
+                    } label : {
+                        HStack {
+                            Image(mission.image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                            
+                            VStack(alignment: .leading) {
+                                Text(mission.displayName)
+                                    .font(.headline)
+                                    .foregroundStyle(.white)
+                                
+                                Text(mission.formattedLaunchDate)
+                                    .font(.caption)
+                                    .foregroundStyle(.gray)
+                            }
+                            .padding(.leading, 6)
                         }
                     }
-                }.padding([.horizontal, .bottom])
-            }.navigationTitle("Moonshot")
-            .background(.darkBackground)
-            .preferredColorScheme(.dark)
+                }.listStyle(.plain)
+                .listRowBackground(Color.lightBackground)
+            }
+        }
+    }
+}
+
+struct ContentView: View {
+    let missions: [Mission] = Bundle.main.decode("missions.json")
+    let astronauts: [String: Astronaut] = Bundle.main.decode("astronauts.json")
+    
+    @State private var showingList = true
+    
+    var body: some View {
+        ZStack {
+            NavigationStack {
+                Group {
+                    if showingList {
+                        ListLayout(missions: missions, astronauts: astronauts)
+                    } else {
+                        BoxLayout(missions: missions, astronauts: astronauts)
+                    }
+                }.navigationTitle("Moonshot")
+                .background(.darkBackground)
+                .preferredColorScheme(.dark)
+                .toolbar {
+                    Button {
+                        showingList.toggle()
+                    } label: {
+                        Text("Grid")
+                        Image(systemName: "arrow.left.arrow.right")
+                        Text("List")
+                    }
+                }
+            }.scrollContentBackground(.hidden)
         }
     }
 }
