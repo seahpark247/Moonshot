@@ -9,7 +9,6 @@ import SwiftUI
 
 struct BoxLayout: View {
     let missions: [Mission]
-    let astronauts: [String: Astronaut]
     let columns = [
         GridItem(.adaptive(minimum: 150))
     ]
@@ -18,9 +17,7 @@ struct BoxLayout: View {
         ScrollView {
             LazyVGrid(columns: columns) {
                 ForEach(missions) { mission in
-                    NavigationLink {
-                        MissionView(mission: mission, astronauts: astronauts)
-                    } label : {
+                    NavigationLink(value: mission) {
                         VStack {
                             Image(mission.image)
                                 .resizable()
@@ -55,15 +52,12 @@ struct BoxLayout: View {
 
 struct ListLayout: View {
     let missions: [Mission]
-    let astronauts: [String: Astronaut]
     
     var body: some View {
         Form {
             List {
                 ForEach(missions) { mission in
-                    NavigationLink {
-                        MissionView(mission: mission, astronauts: astronauts)
-                    } label : {
+                    NavigationLink(value: mission) {
                         HStack {
                             Image(mission.image)
                                 .resizable()
@@ -100,9 +94,9 @@ struct ContentView: View {
             NavigationStack {
                 Group {
                     if showingList {
-                        ListLayout(missions: missions, astronauts: astronauts)
+                        ListLayout(missions: missions)
                     } else {
-                        BoxLayout(missions: missions, astronauts: astronauts)
+                        BoxLayout(missions: missions)
                     }
                 }.navigationTitle("Moonshot")
                 .background(.darkBackground)
@@ -115,6 +109,9 @@ struct ContentView: View {
                         Image(systemName: "arrow.left.arrow.right")
                         Text("List")
                     }
+                }
+                .navigationDestination(for: Mission.self) { mission in
+                    MissionView(mission: mission, astronauts: astronauts)
                 }
             }.scrollContentBackground(.hidden)
         }
